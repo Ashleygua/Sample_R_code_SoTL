@@ -1,0 +1,94 @@
+---
+title: "Example R Code for SoTL projects"
+author: "Ashley Yue Mao"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# 0. Install and load required packages
+
+Packages you might use: - **tidyverse**: a collection of packages that you're likely to use in everyday data analyses.
+
+In order to use a package, you need to install it to your computer (once) and load it every time when you start a new R session. As an example, here is how you can install and load a package:
+
+```{r install a package}
+install.packages("tidyverse")
+```
+
+```{r load a package}
+library(tidyverse)
+```
+
+# 1. Read in your data
+
+Download survey data as .csv files from [Qualtrics](https://it.ubc.ca/services/teaching-learning-tools/survey-tool) and then you can use `read_csv` functions to read in your data.
+
+In this document, I will use three simulated data file: - a file that contain a identifier for each student, and their grades before the intervention - a file that contain a identifier for each student, and their grades after the intervention - a file that contain a identifier for each strudent, and their gender and group (e.g., experimental, control)
+
+```{r read in data}
+pre <- read_csv("data/pre_grades.csv")
+post <- read_csv("data/post_grades.csv")
+info <- read_csv("data/info.csv")
+```
+
+As for how to import other types of data, such as SPSS, SAS, JASON, check the [datacamp](https://www.datacamp.com/tutorial/r-data-import-tutorial).
+
+Let's have a look on the data:
+
+```{r data overview}
+str(pre)
+str(post)
+str(info)
+
+View(pre)
+View(post)
+View(info)
+```
+
+# 2. Combine the three dataset into one
+
+A common task then is to combine the three dataset into one for further analysis.
+
+Step1: combine pre grades and post grades into one dataset
+-   rename column names in pre and post grades data to be consistent
+-   add a new column to keep record which time do the grades belong to in the new dataset
+
+```{r combine pre and post grades in long format}
+pre <- pre |>
+  rename("identifier" = "Identifier",
+         "grades" = "Scores") |>
+  add_column(time = "pre")
+
+post <- post |>
+  add_column(time = "post")
+
+grades_long <- pre |>
+  bind_rows(post)
+```
+
+```{r combine pre and post grades in wide
+format}
+pre <- pre |>
+  rename("identifier" = "Identifier",
+         "grades" = "Scores") |>
+  add_column(time = "pre")
+
+post <- post |>
+  add_column(time = "post")
+
+grades_long <- pre |>
+  bind_rows(post)
+```
+
+
+
+
+# 3. Clean the data
+
+# 4. Descriptive stats
+
+# 5. Visualization
+
+# 6. Statistical analysis
+
+# 7. Reporting

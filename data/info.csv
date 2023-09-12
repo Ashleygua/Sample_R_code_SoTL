@@ -1,101 +1,101 @@
 "identifier","gender","group"
-1,"male",1
+1,"female",0
 2,NA,0
-3,NA,0
-4,"male",1
-5,NA,1
-6,"prefer not to answer",0
-7,NA,1
-8,"male",0
+3,"prefer not to answer",1
+4,"male",0
+5,"female",1
+6,"male",1
+7,"male",0
+8,"male",1
 9,NA,0
-10,"male",1
-11,"prefer not to answer",0
-12,"prefer not to answer",0
-13,"prefer not to answer",0
-14,"male",1
-15,"prefer not to answer",0
-16,"prefer not to answer",0
-17,"female",1
-18,NA,1
-19,"prefer not to answer",0
-20,NA,0
-21,"female",0
+10,"prefer not to answer",0
+11,"male",0
+12,"female",0
+13,"male",0
+14,"male",0
+15,"male",0
+16,"female",0
+17,NA,1
+18,"male",1
+19,"prefer not to answer",1
+20,"male",1
+21,"male",1
 22,"prefer not to answer",1
-23,NA,1
-24,"female",1
-25,"prefer not to answer",1
-26,"female",1
-27,NA,0
-28,"male",0
-29,"male",1
-30,"female",0
-31,"prefer not to answer",0
-32,"male",1
+23,"female",0
+24,"prefer not to answer",0
+25,NA,0
+26,NA,1
+27,"female",1
+28,"female",1
+29,"prefer not to answer",1
+30,"prefer not to answer",1
+31,"male",1
+32,"female",1
 33,"female",0
-34,NA,1
-35,"male",0
-36,"male",1
-37,"prefer not to answer",1
-38,"female",1
+34,"female",1
+35,"prefer not to answer",1
+36,"prefer not to answer",0
+37,NA,0
+38,"prefer not to answer",0
 39,"female",1
-40,"male",1
-41,"female",1
-42,NA,0
-43,"prefer not to answer",0
-44,NA,0
-45,"female",1
-46,NA,1
-47,"male",1
-48,"prefer not to answer",0
+40,"female",1
+41,NA,0
+42,"male",0
+43,"female",0
+44,"prefer not to answer",0
+45,"male",0
+46,"male",1
+47,"prefer not to answer",0
+48,"female",1
 49,"prefer not to answer",0
-50,"male",1
+50,"prefer not to answer",1
 51,"prefer not to answer",1
-52,"female",0
-53,"prefer not to answer",1
-54,"prefer not to answer",1
-55,"prefer not to answer",1
-56,"prefer not to answer",0
-57,"female",0
-58,NA,1
-59,"prefer not to answer",1
+52,NA,1
+53,"male",0
+54,NA,1
+55,"male",0
+56,"female",1
+57,"male",0
+58,"prefer not to answer",0
+59,"female",1
 60,"female",1
-61,"prefer not to answer",0
-62,"female",0
-63,NA,0
+61,"female",0
+62,"female",1
+63,"female",1
 64,"female",1
 65,NA,1
-66,"female",0
-67,"prefer not to answer",1
-68,"prefer not to answer",0
-69,NA,0
-70,"prefer not to answer",0
-71,"female",0
-72,"female",1
+66,"female",1
+67,NA,0
+68,NA,0
+69,"female",0
+70,"female",1
+71,NA,0
+72,"prefer not to answer",0
 73,NA,1
-74,"male",0
+74,"female",1
 75,"male",1
-76,NA,0
-77,"female",1
+76,"female",1
+77,"prefer not to answer",1
 78,NA,1
-79,"prefer not to answer",1
-80,NA,0
-81,"female",1
-82,NA,1
-83,NA,1
-84,"prefer not to answer",0
+79,"female",1
+80,"female",0
+81,"prefer not to answer",1
+82,NA,0
+83,"prefer not to answer",1
+84,NA,0
 85,"male",1
-86,"female",0
-87,"prefer not to answer",0
-88,NA,1
-89,"male",0
-90,"female",0
+86,NA,0
+87,"female",0
+88,"female",0
+89,NA,1
+90,"prefer not to answer",1
 91,"prefer not to answer",0
-92,"prefer not to answer",0
-93,NA,1
-94,"prefer not to answer",0
-95,"prefer not to answer",0
-96,NA,1
-97,"prefer not to answer",1
+92,"female",1
+93,"prefer not to answer",1
+94,"female",0
+95,"prefer not to answer",1
+96,"prefer not to answer",1
+97,"prefer not to answer",0
 98,NA,1
-99,"female",0
-100,NA,1
+99,"male",0
+100,"prefer not to answer",1

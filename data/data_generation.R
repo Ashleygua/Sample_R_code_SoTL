@@ -1,13 +1,29 @@
 # Generate pre manipulation grades
 data1 <- dplyr::tibble(
   Identifier = sample(1:100, 100, replace = TRUE),
-  Scores = sample(c(60:100, NA), 100, replace = TRUE)
+  Scores = sample(c(60:100, NA), 100, replace = TRUE),
+  WB1_1 = sample(c(1:6), 100, replace = TRUE),
+  WB1_2 = sample(c(1:6), 100, replace = TRUE),
+  WB1_3 = sample(c(1:6), 100, replace = TRUE),
+  WB1_4 = sample(c(1:6), 100, replace = TRUE),
+  WB2_1 = sample(c(1:6), 100, replace = TRUE),
+  WB2_2 = sample(c(1:6), 100, replace = TRUE),
+  WB2_3 = sample(c(1:6), 100, replace = TRUE),
+  WB2_4 = sample(c(1:6), 100, replace = TRUE)
 )
 
 # Generate post manipulation grades
 data2 <- dplyr::tibble(
   identifier =  sample(1:100, 100, replace = TRUE),
-  grades = sample(c(60:100, NA), 100, replace = TRUE)
+  grades = sample(c(60:100, NA), 100, replace = TRUE),
+  WB1_1 = sample(c(1:6), 100, replace = TRUE),
+  WB1_2 = sample(c(1:6), 100, replace = TRUE),
+  WB1_3 = sample(c(1:6), 100, replace = TRUE),
+  WB1_4 = sample(c(1:6), 100, replace = TRUE),
+  WB2_1 = sample(c(1:6), 100, replace = TRUE),
+  WB2_2 = sample(c(1:6), 100, replace = TRUE),
+  WB2_3 = sample(c(1:6), 100, replace = TRUE),
+  WB2_4 = sample(c(1:6), 100, replace = TRUE)
 )
 
 # Generate data for student info and manipulation conditions

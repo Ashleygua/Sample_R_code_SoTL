@@ -5,37 +5,73 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T,
+                      message = F,
+                      warning = F, 
+                      results = "hide")
+```
+
 # 0. Install and load required packages
 
-Packages you might use: - **tidyverse**: a collection of packages that you're likely to use in everyday data analyses.
+Packages you might use:
+
+-   **tidyverse**: a collection of packages that you're likely to use in everyday data analyses.
+-   **psych**: a package for conducting psychological research
+-   **lavaan**: a package for fitting latent variable models
+-   **gtsummary**: a package for creating summary tables
+-   **report**: a package for reporting statistical results
 
 In order to use a package, you need to install it to your computer (once) and load it every time when you start a new R session. As an example, here is how you can install and load a package:
 
-```{r install a package}
-install.packages("tidyverse")
+```{r install_packages}
+if (require(tidyverse)){
+  install.packages("tidyverse")}
+
+if (require(psych)){
+  install.packages("psych")}
+
+if (require(lavaan)){
+  install.packages("lavaan")}
+
+if (require(gtsummary)){
+  install.packages("gtsummary")}
+
+if (require(report)){
+  install.packages("report")}
 ```
 
-```{r load a package}
+```{r load_packages}
 library(tidyverse)
+library(psych)
+library(lavaan)
+library(gtsummary)
+library(report)
 ```
 
-# 1. Read in your data
+# 1. Data reading
 
-Download survey data as .csv files from [Qualtrics](https://it.ubc.ca/services/teaching-learning-tools/survey-tool) and then you can use `read_csv` functions to read in your data.
+Download survey data as .csv files from [Qualtrics](https://it.ubc.ca/services/teaching-learning-tools/survey-tool) and then you can use `read_csv` functions to read your data.
 
-In this document, I will use three simulated data file: - a file that contain a identifier for each student, and their grades before the intervention - a file that contain a identifier for each student, and their grades after the intervention - a file that contain a identifier for each strudent, and their gender and group (e.g., experimental, control)
+In this document, I will use three simulated data files:
 
-```{r read in data}
+-   a file that contains an identifier for each student, their grades before the intervention, and a two-factor wellbeing measure, each with 4 items, named from WB1_1 to WB1_4 and WB2_1 to WB2_4
+
+-   a file that contains an identifier for each student, their grades after the intervention, and a two-factor wellbeing measure, each with 4 items, named from WB1_1 to WB1_4 and WB2_1 to WB2_4
+
+-   a file that contains an identifier for each student and their gender and group (e.g., experimental, control)
+
+```{r read_in_data}
 pre <- read_csv("data/pre_grades.csv")
 post <- read_csv("data/post_grades.csv")
 info <- read_csv("data/info.csv")
 ```
 
-As for how to import other types of data, such as SPSS, SAS, JASON, check the [datacamp](https://www.datacamp.com/tutorial/r-data-import-tutorial).
+As for importing other types of data, such as SPSS, SAS, and JASON, check the [datacamp](https://www.datacamp.com/tutorial/r-data-import-tutorial).
 
-Let's have a look on the data:
+Let's have a look at the data:
 
-```{r data overview}
+```{r data_overview}
 str(pre)
 str(post)
 str(info)
@@ -45,50 +81,342 @@ View(post)
 View(info)
 ```
 
-# 2. Combine the three dataset into one
+# 2. Data cleaning
 
-A common task then is to combine the three dataset into one for further analysis.
+## 2.1 Duplicates
 
-Step1: combine pre grades and post grades into one dataset
--   rename column names in pre and post grades data to be consistent
--   add a new column to keep record which time do the grades belong to in the new dataset
+```{r delete_duplicates}
+pre_unique <- pre[!duplicated(pre$Identifier), ]
+post_unique <- post[!duplicated(post$identifier), ]
+```
 
-```{r combine pre and post grades in long format}
-pre <- pre |>
+Note that these codes keep the record associated with any ID that shows up earlier.
+
+If, for some reason, it makes better sense to keep the record associated with any ID that shows up later, add the argument `fromLast = TRUE`, e.g., `pre_unique <- pre[!duplicated(pre$Identifier, fromLast = TRUE), ]`.
+
+If somehow it makes better sense to examine the data more closely and determine which record to keep based on completeness or other reasons, it would be good to write a document of how the inclusion and exclusion were determined. I recommend filtering all the duplicates, adding a row number, scrutinizing the data to determine which record to keep or delete, putting the corresponding row numbers into a vector, and filtering the data based on the vector (i.e., the row numbers).
+
+## 2.2 Reverse coding
+
+Assuming that the second and third items of the first well-being factor should be reverse coded, here is the code for reverse coding.
+
+```{r reverse_coding}
+pre_unique$WB1_2 <- 7- pre_unique$WB1_2 # as it ranges from 1 to 6
+pre_unique$WB1_3 <- 7- pre_unique$WB1_3
+
+post_unique$WB1_2 <- 7- post_unique$WB1_2
+post_unique$WB1_3 <- 7- post_unique$WB1_3
+```
+
+## 2.3 Missing values
+
+List-wise deletion is the simplest if it makes sense.
+
+```{r listwise_deletion}
+pre_unique <- pre_unique[complete.cases(pre_unique), ]
+post_unique <- post_unique[complete.cases(post_unique), ]
+```
+
+More about [missing values](https://r4ds.hadley.nz/missing-values).
+
+# 3. Data joins and computes
+
+## 3.1 Joins
+
+A common task is combining the three datasets for further analysis.
+
+-   rename column names in pre and post-grade data to be consistent
+
+-   add a new column to keep the record which time the grades belong in the new dataset
+
+-   depending on the analyses you plan to do in the next step, you may want combined data in [long format or wide format](https://www.statology.org/long-vs-wide-data/)
+
+-   combing the info data
+
+```{r join_cleaned_datasets}
+pre_unique <- pre_unique |>
   rename("identifier" = "Identifier",
          "grades" = "Scores") |>
   add_column(time = "pre")
 
-post <- post |>
+post_unique <- post_unique |>
   add_column(time = "post")
 
-grades_long <- pre |>
-  bind_rows(post)
+data_long <- pre_unique |>
+  bind_rows(post_unique) |> 
+  inner_join(info, by = "identifier")
+
+data_wide <- pre_unique|>
+  inner_join(post_unique, by = "identifier", 
+             suffix = c(".pre", ".post")) |> 
+  inner_join(info, by = "identifier")
 ```
 
-```{r combine pre and post grades in wide
-format}
-pre <- pre |>
-  rename("identifier" = "Identifier",
-         "grades" = "Scores") |>
-  add_column(time = "pre")
+More about [data manipulation](https://ubc-library-rc.github.io/data-manipulation-dplyr/), such as renaming.
 
-post <- post |>
-  add_column(time = "post")
+More about [join tables](https://ubc-library-rc.github.io/relational-data-r/).
 
-grades_long <- pre |>
+Note that if we directly combine the raw pre and post data, combining into a long format usually does not immediately result in an error message, but it will cause a problem in further analysis, which is hard to identify, and combining the data into a wide format will produce a warning message. This is because some students took the survey twice for whatever reason. We need to deal with duplicates first.
+
+```{r join_raw_datasets, eval=FALSE, warning=TRUE}
+long <- pre |>
   bind_rows(post)
+
+wide <- pre|>
+  inner_join(post, by = "identifier")
 ```
 
+```         
+Warning: Detected an unexpected many-to-many relationship between `x` and `y`.
+```
 
+## 3.2 Composite scores
 
+The simple sum score of the items for each factor:
 
-# 3. Clean the data
+```{r sum_scores}
+data_long$WB1 = rowSums(data_long[,c('WB1_1',
+                                     'WB1_2',
+                                     'WB1_3',
+                                     'WB1_4')], na.rm=TRUE)
 
-# 4. Descriptive stats
+data_long$WB2 = rowSums(data_long[,c('WB2_1',
+                                     'WB2_2',
+                                     'WB2_3',
+                                     'WB2_4')], na.rm=TRUE)
+```
 
-# 5. Visualization
+Factor scores:
 
-# 6. Statistical analysis
+```{r factor_scores}
+wb <- 'f1 =~ WB1_1 + WB1_2 + WB1_3 + WB1_4
+       f2 =~ WB2_1 + WB2_2 + WB2_3 + WB2_4' 
+mwb <- cfa(wb, data = data_long, std.lv = TRUE) 
+data_long$WB1_f <- as.data.frame(lavPredict(mwb))$f1
+data_long$WB2_f <- as.data.frame(lavPredict(mwb))$f2
+```
 
-# 7. Reporting
+# 4. Common psychometric properties
+
+## 4.1 Reliability/ Cronbach's alpha
+
+```{r cronbach_alpha}
+alpha(data_long[,c('WB1_1', 'WB1_2', 'WB1_3', 'WB1_4')])
+alpha(data_long[,c('WB2_1', 'WB2_2', 'WB2_3', 'WB2_4')])
+```
+
+## 4.2 Validity/ Confirmatory factor analysis
+
+```{r cfa}
+wb <- 'f1 =~ WB1_1 + WB1_2 + WB1_3 + WB1_4
+       f2 =~ WB2_1 + WB2_2 + WB2_3 + WB2_4' 
+mwb <- cfa(wb, data = data_long, std.lv = TRUE) 
+summary(mwb)
+```
+
+# 5. Descriptive stats
+
+## 5.1 Categorical variables
+
+```{r frequency}
+table(data_wide$gender) # single variable
+table(data_wide$group)
+
+table(data_wide$gender, data_wide$group) # two variables
+```
+
+## 5.2 Quantitative variables
+
+```{r summary_statistics}
+describe(data_wide$grades.x)
+```
+
+## 5.3 Descriptive summary tables
+
+```{r descriptive_table}
+data_long |>
+  select(time, grades, gender, group, WB1, WB2) |>
+  tbl_summary(by = time,
+              type = all_continuous() ~ "continuous2",
+              statistic = list(all_continuous() ~ c("{mean} ({sd})")), 
+              digits = all_continuous() ~ 2)
+```
+
+More about [summary tables](https://www.danieldsjoberg.com/gtsummary/articles/tbl_summary.html).
+
+# 6. Visualization
+
+```{r group_comparison}
+data_long |>
+  ggplot(aes(x = group, y = grades, fill = group)) +
+    geom_boxplot(outlier.size = 1) +
+    labs(title = "Boxplots of grades by group", 
+         x = "Intervention group", y = "grades")
+
+data_long |>
+  ggplot(aes(x = group, y = WB1, fill = group)) +
+    geom_boxplot(outlier.size = 1) +
+    labs(title = "Boxplots of WB1 by group", 
+         x = "Intervention group", y = "WB1")
+
+data_long |>
+  ggplot(aes(x = group, y = WB2, fill = group)) +
+    geom_boxplot(outlier.size = 1) +
+    labs(title = "Boxplots of WB2 by group", 
+         x = "Intervention group", y = "WB2")
+
+```
+
+```{r pre_post_comparison}
+data_long |>
+  mutate(group = as.factor(group)) |>
+  group_by(group, time) |>
+  summarise(mean_grades = mean(grades), .groups = "drop") |>
+  ggplot(aes(time, mean_grades, color = group, group = group)) +
+  geom_line(linewidth = 1) +
+  labs(x = "Time", y = "Mean of Grades", color = "group", 
+       title = 'Pre and Post Grades by Groups') +
+  theme(plot.title = element_text(hjust = 0.5, # horizontal justification
+                                  face = 'bold',
+                                  size = 12))
+
+data_long %>%
+  mutate(group = as.factor(group)) |>
+  group_by(group, time) |>
+  summarise(mean_WB1 = mean(WB1), .groups = "drop") |>
+  ggplot(aes(time, mean_WB1, color = group, group = group)) +
+  geom_line(linewidth = 1) +
+  labs(x = "Time", y = "Mean of WB1", color = "group", 
+       title = 'Pre and Post WB1 Scores by Groups') +
+  theme(plot.title = element_text(hjust = 0.5, # horizontal justification
+                                  face = 'bold',
+                                  size = 12))
+
+data_long %>%
+  mutate(group = as.factor(group)) |>
+  group_by(group, time) |>
+  summarise(mean_WB2 = mean(WB2), .groups = "drop") |>
+  ggplot(aes(time, mean_WB2, color = group, group = group)) +
+  geom_line(linewidth = 1) +
+  labs(x = "Time", y = "Mean of WB2", color = "group", 
+       title = 'Pre and Post WB2 Scores by Groups') +
+  theme(plot.title = element_text(hjust = 0.5, # horizontal justification
+                                  face = 'bold',
+                                  size = 12))
+```
+
+# 7. Inferential stats
+
+Note. Assumptions of each of the following tests need to be considered and examined.
+
+## 7.1 One sample t-test
+
+It is used to see whether the hypothesized value of the population mean matches actual value.
+
+Question: Is the average grades 85?
+
+```{r one_sample_t_test}
+m1 <- t.test(data_long$grades, mu = 85,
+       alternative = c("two.sided"),
+       conf.level = 0.95)
+summary(m1)
+report(m1)
+```
+
+## 7.2 Two sample independent t-test
+
+It is used to see whether there are group differences in population means between two groups.
+
+Question: Do intervention and non-intervention group has same average grades?
+
+```{r two_sample_independent_t_test}
+m2 <- t.test(grades ~ group, var.eq = TRUE, data = data_long)
+summary(m2)
+report(m2)
+```
+
+## 7.3 Paired sample t-test
+
+It is used to see whether there are differences in population means between two times or two conditions.
+
+Question: Do students' post grades increased compared to the pre grades?
+
+```{r paired_sample_t_test}
+m3 <- t.test(data_wide$grades.pre, data_wide$grades.post, var.eq = TRUE, paired = TRUE, data = data_wide)
+summary(m3)
+report(m3)
+```
+
+## 7.4 One-way ANOVA
+
+It is used to determine whether there are group differences in numeric data between two or more groups.
+
+Question: Do grades significantly differ by gender groups (male, female, prefer not to answer)?
+
+```{r one_way_ANOVA}
+m4 <- aov(grades ~ gender, data = data_long)
+summary(m4)
+report(m4)
+```
+
+## 7.5 Two way ANOVA
+
+It is used to determine whether there are group differences in numeric data between groups characterized by two different categorical variables.
+
+Question: Do grades significantly differ by gender and intervention group?
+
+```{r two_way_ANOVA}
+m5 <- aov(grades ~ gender + group, data = data_long)
+summary(m5)
+report(m5)
+```
+
+## 7.6 Repeated measure ANOVA
+
+It is used to see whether there are differences in population means under three or more times or conditions.
+
+Assuming we have three time posts,
+
+Question: Do grades changes along the time?
+
+```{r repeated_measure_ANOVA}
+m6 <- aov(grades ~ factor(time) + Error(factor(identifier)), data = data_long)
+summary(m6)
+report(m6)
+```
+
+## 7.7 Mixed design ANOVA
+
+It is to test for differences between two or more independent groups whilst subjecting participants to repeated measures.
+
+Question: Do the grades of the intervention and non-intervention groups change differently?
+
+```{r mixed_design_anova}
+jmv::anovaRM(
+  data = data_wide,
+  rm = list(
+    list(
+      label="Time",
+      levels=c("pre", "post"))),
+  rmCells = list(
+    list(
+      measure="grades.pre",
+      cell="pre"),
+    list(
+      measure="grades.post",
+      cell="post")),
+  bs = group,
+  effectSize = "partEta",
+  rmTerms = ~ Time,
+  bsTerms = ~ group,
+  spherTests = TRUE,
+  leveneTest = TRUE,
+  qq = TRUE,
+  postHoc = list(
+    c("Time", "group")),
+  postHocCorr = "bonf",
+  emMeans = ~ Time:group,
+  emmTables = TRUE,
+  groupSumm = TRUE)
+
+```

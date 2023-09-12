@@ -227,7 +227,7 @@ table(data_wide$gender, data_wide$group) # two variables
 
 ## 5.2 Quantitative variables
 
-```{r summary_statistics}
+```{r summary_statistics, eval = F}
 describe(data_wide$grades.x)
 ```
 
